@@ -19,9 +19,9 @@ class login extends \Lib\controller {
 	public function loginAction() {
 		$GLOBALS['appLog']->log('+++   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
 
-		require (SITEPATH . 'config/errorMsgs.php');
-		$GLOBALS['appLog']->log('errorMsg[usernameReq]: ' . $errorMsg['usernameReq'] . '   errorMsg[pwdReq]: ' . $errorMsg['pwdReq'], \Lib\appLogger::INFO, __METHOD__);
-		
+		$lang = \Lib\Registry::getInstance()->get('lang');
+		$userdoa = new \Models\userdoa();
+
 		// @todo : sanitize input vars; don't think I need to since I'm using PDO
 		/********
 		 *   http://phpmaster.com/input-validation-using-filter-functions/
@@ -37,12 +37,12 @@ class login extends \Lib\controller {
 		if( empty($username) )
 		{
 			$GLOBALS['appLog']->log('Empty Username', \Lib\appLogger::INFO, __METHOD__);
-			$errorId = 'usernameReq';
+			$errorId = 'USERNAMEREQ';
 		}
 		else if( empty($password) )
 		{
 			$GLOBALS['appLog']->log('Empty Password', \Lib\appLogger::INFO, __METHOD__);
-			$errorId = 'pwdReq';
+			$errorId = 'PWDREQ';
 		}
 
 
@@ -52,8 +52,8 @@ class login extends \Lib\controller {
 		if (isset($errorId))
 		{
 			$GLOBALS['appLog']->log('errorId = ' . $errorId, \Lib\appLogger::INFO, __METHOD__);
-			$GLOBALS['appLog']->log("errorMsg[" . $errorId . "] = " . $errorMsg[$errorId], \Lib\appLogger::INFO, __METHOD__);
-			\Lib\session::set('errorMsg', $errorMsg[$errorId]);
+			$GLOBALS['appLog']->log("lang[" . $errorId . "] = " . $lang[$errorId], \Lib\appLogger::INFO, __METHOD__);
+			\Lib\session::set('displayMsg', $lang[$errorId]);
 			header("location: http://" . HOST . URI ."/login");
 			exit();
 		}
@@ -70,10 +70,16 @@ class login extends \Lib\controller {
 		 */
 		if ($uid > 0)
 		{
-			$user = new \Models\user($uid);
+			$user = $userdoa->getUserData($uid);
+			$GLOBALS['appLog']->log(print_r($user, 1), \Lib\appLogger::DEBUG, __METHOD__);
+			$GLOBALS['appLog']->log('$user is of class : ' . get_class($user),
+							\Lib\appLogger::DEBUG, __METHOD__);
+			// testing the toArray function; $userArray not used here
+			$userArray = $user->toArray();
+			$GLOBALS['appLog']->log(print_r($userArray, 1), \Lib\appLogger::DEBUG, __METHOD__);
 			if ($user->checkActive())
 			{
-				$GLOBALS['appLog']->log(print_r($user, 1), \Lib\appLogger::DEBUG, __METHOD__);
+				$userdoa->updateLastlogin($uid);
 				\Lib\session::set('username', $username);
 				\Lib\session::set('uid', $uid);
 				header("location:  http://" . HOST . URI ."/dashboard");
@@ -81,27 +87,39 @@ class login extends \Lib\controller {
 			}
 			else
 			{
-				$errorId = 'acctNotAct';
-				\Lib\session::set('errorMsg', $errorMsg[$errorId]);
+				$errorId = 'ACCTNOTACT';
+				\Lib\session::set('displayMsg', $lang[$errorId]);
 				header("location: http://" . HOST . URI ."/login");
 				exit();
 			}
 		}
 		else
 		{
-			$errorId = 'invaliduserpwd';
-			\Lib\session::set('errorMsg', $errorMsg[$errorId]);
+			$errorId = 'INVALIDUSERPWD';
+			\Lib\session::set('displayMsg', $lang[$errorId]);
 			header("location: http://" . HOST . URI ."/login");
 			exit();
 		}
-		
 		$GLOBALS['appLog']->log('---   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
 	}
 
 	public function logoutAction() {
 		$GLOBALS['appLog']->log('+++   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
+/*
+ * Attempt at putting an objec in _SESSION; not even sure if it's a good idea
+require "/var/www/mvc/models/message.php";
+ * 
+		require (SITEPATH . 'config/const.php');
+		$msg = new \Models\message();
+		$msg->setStatus("successful");
+		$msg->addMsg($statusMsg['userloggedout']);
 		\Lib\session::destroy();
+		\Lib\session::init();
+		\Lib\session::set('message', $msg);
+ * 
+ */
 		
+		\Lib\session::destroy();
 		$GLOBALS['appLog']->log('calling header with http://' . HOST . URI . '/login', \Lib\appLogger::DEBUG, __METHOD__);
 		header("location: http://" . HOST . URI ."/login");
 		exit();

@@ -1,23 +1,31 @@
 <?php
 namespace Controllers;
 
-class profile extends \Lib\controller {
+class user extends \Lib\controller {
 	
-  function __construct() {
+  public function __construct() {
 		parent::__construct();
   }
 
-	function index() {
-		$GLOBALS['appLog']->log('+++   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
-		//$this->view->render(basename(__FILE__, ".php"));
-		$this->view->render(basename(__FILE__, ".php") . "/" . __FUNCTION__);
-		$GLOBALS['appLog']->log('---   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
+	public function index() {
+//		$GLOBALS['appLog']->log('+++   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
+//		$this->view->render(basename(__FILE__, ".php") . "/" . __FUNCTION__);
+//		$GLOBALS['appLog']->log('---   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
+		$this->register();
 	} // end function index
 
-	function register() {
+	public function register() {
 		$GLOBALS['appLog']->log('+++   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
+		$lang = \Lib\Registry::getInstance()->get('lang');
+		// if the form has not be submitted, then render form to user
+		if (!isset($_POST['submitform'])) {
+			$this->view->render(basename(__FILE__, ".php") . "/" . __FUNCTION__);
+		}
+		// form has been submitted; process it
+		else {
 
-		require (SITEPATH . 'config/errorMsgs.php');
+		$userdoa = new \Models\userdoa();
+
 		$username = $_POST['username'];
 		$password = $_POST['password'];
 		$password2 = $_POST['password2'];
@@ -30,25 +38,25 @@ class profile extends \Lib\controller {
 		if( empty($username) )
 		{
 			$GLOBALS['appLog']->log('Empty Username', \Lib\appLogger::INFO, __METHOD__);
-			$errorMessages[$errors] = $errorMsg['usernameReq'];
+			$errorMessages[$errors] = $lang['USERNAMEREQ'];
 			$errors++;
 		}
 		if( empty($password) )
 		{
 			$GLOBALS['appLog']->log('Empty Password', \Lib\appLogger::INFO, __METHOD__);
-			$errorMessages[$errors] = $errorMsg['pwdReq'];
+			$errorMessages[$errors] = $lang['PWDREQ'];
 			$errors++;
 		}
 		if( empty($password2) )
 		{
 			$GLOBALS['appLog']->log('Empty Confirm Password', \Lib\appLogger::INFO, __METHOD__);
-			$errorMessages[$errors] = $errorMsg['pwdConfirmReq'];
+			$errorMessages[$errors] = $lang['PWDCONFIRMREQ'];
 			$errors++;
 		}
 		if( empty($email) )
 		{
 			$GLOBALS['appLog']->log('Empty Email', \Lib\appLogger::INFO, __METHOD__);
-			$errorMessages[$errors] = $errorMsg['emailReq'];
+			$errorMessages[$errors] = $lang['EMAILREQ'];
 			$errors++;
 		}
 
@@ -56,10 +64,10 @@ class profile extends \Lib\controller {
 		{
 			// so far, no errors
 			// check if the username already exists
-			if (\Models\user::userExists($username))
+			if ($userdoa->userExists($username))
 			{
 				$GLOBALS['appLog']->log('Username exists', \Lib\appLogger::INFO, __METHOD__);
-				$errorMessages[$errors] = $errorMsg['userExists'];
+				$errorMessages[$errors] = $lang['USEREXISTS'];
 				$errors++;
 			}
 
@@ -67,52 +75,83 @@ class profile extends \Lib\controller {
 			elseif ($password != $password2)
 			{
 				$GLOBALS['appLog']->log('password and confirm do not match', \Lib\appLogger::INFO, __METHOD__);
-				$errorMessages[$errors] = $errorMsg['pwdConfrmNoMatch'];
+				$errorMessages[$errors] = $lang['PWDCONFIRMNOMATCH'];
 				$errors++;
 			}
 
 			elseif (!filter_var($email, FILTER_VALIDATE_EMAIL))
 			{
-				$GLOBALS['appLog']->log('password and confirm do not match', \Lib\appLogger::INFO, __METHOD__);
-				$errorMessages[$errors] = $errorMsg['emailNotValid'];
+				$GLOBALS['appLog']->log('Not a valid E-mail address', \Lib\appLogger::INFO, __METHOD__);
+				$errorMessages[$errors] = $lang['EMAILNOTVALID'];
 				$errors++;
 			}
 
 		}
 
-		if ($errors > 0)
+		if ($errors == 0)
+		{
+			$u['username'] = $username;
+			// only want username set in session
+			\Lib\session::set('userData', $u);
+
+			$u['email'] = $email;
+			$u['created'] = date("Y-m-d H:i:s");
+			$u['active'] = false;
+			$u['password'] = \Lib\auth::encrypt($username, $password);
+			$u['activateKey'] = 0;
+			$u['salt'] = 0;
+
+			\Lib\session::set('status', 'successful');
+			$uid = $userdoa->createNewUser($u);
+			$user = $userdoa->getUserData($uid);
+			$this->sendActivationEmail($user);
+
+			// add a view telling user to check email and follow the directions to complete registration
+			$this->view->render(basename(__FILE__, ".php") . "/" . __FUNCTION__);
+		}
+
+		else //if ($errors > 0)
 		{
 			$u['username'] = $username;
 			$u['email'] = $email;
+			\Lib\session::set('status', 'errors');
 			\Lib\session::set('userData', $u);
-			\Lib\session::set('errorMsg', $errorMessages);
-			header("location: http://" . HOST . URI ."/profile");
+			\Lib\session::set('displayMsg', $errorMessages);
+			header("location: http://" . HOST . URI ."/user");
 			exit();
 		}
-
-		$u['username'] = $username;
-		$u['email'] = $email;
-		$u['password'] = \Lib\auth::encrypt($password);
-		$user = new \Models\user(0, $u);
-		$this->sendActivationEmail($user);
-
-		// add a view telling user to check email and follow the directions to complete registration
-		$this->view->render(basename(__FILE__, ".php") . "/" . __FUNCTION__);
-		//die ("Activation email Sent");
-
+	}
 
 	} // end function register
 
-	function activate($args)
+	public function activate($args)
 	{
 		$GLOBALS['appLog']->log('args: ' . print_r($args,1), \Lib\appLogger::INFO, __METHOD__);
+		$lang = \Lib\Registry::getInstance()->get('lang');
 		$uid = isset($args[0]) ? $args[0] : null;
 		$key = isset($args[1]) ? $args[1] : null;
 		$GLOBALS['appLog']->log('uid: ' . $uid . '   key: ' . $key, \Lib\appLogger::INFO, __METHOD__);
 		if($uid && $key)
 		{
-			$user = new \Models\user($uid);
-			$user->activate($key);
+			$userdoa = new \Models\userdoa();
+			$user= $userdoa->getUserData($uid);
+			if ($key == $user->getActivateKey())
+			{
+				$results = $userdoa->updateActive($uid);
+
+				/*
+			 	 * check $results for error handling
+			 	 */
+				if (!$results)
+				{
+					$msg = 'Error updating user as active.';
+					$controller = new Error($msg);
+					$controller->index();
+				}
+
+			}
+
+			//
 			// render view telling user the account has now been activated and may login
 			//   have a login button?
 			$this->view->render(basename(__FILE__, ".php") . "/" . __FUNCTION__);
@@ -123,6 +162,138 @@ class profile extends \Lib\controller {
 
 	} // end function activate
 
+	function editUser() {
+		$lang = \Lib\Registry::getInstance()->get('lang');
+		$GLOBALS['appLog']->log('+++   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
+		$GLOBALS['appLog']->log('$_POST: ' . print_r($_POST, 1), \Lib\appLogger::INFO, __METHOD__);
+		$GLOBALS['appLog']->log('$lang = ' . print_r($lang,1),
+						appLogger::INFO, __METHOD__);
+
+		// get user id from session
+		$uid = \Lib\session::get('uid');
+		$GLOBALS['appLog']->log('uid: ' . $uid, \Lib\appLogger::INFO, __METHOD__);
+		// get user data from db
+		$userdoa = new \Models\userdoa();
+		$user = $userdoa->getUserData($uid);
+		$GLOBALS['appLog']->log('user: ' . print_r($user, 1), \Lib\appLogger::INFO, __METHOD__);
+
+		// if the form has not be submitted, then render form to user
+		if (!isset($_POST['submitform'])) {
+			$this->view->render(basename(__FILE__, ".php") . "/" . __FUNCTION__);
+		}
+		// form has been submitted; process it
+		else {
+			$password = $_POST['password'];
+			$username = $user->getUsername();
+			$uidStored = \Lib\auth::authenticate($username, $password);
+			$GLOBALS['appLog']->log(sprintf('user id from session (%s); user id from db (%s)', $uid, $uidStored), \Lib\appLogger::INFO, __METHOD__);
+
+			$errors = 0;
+			$errorMessages = array();
+
+			/*
+			 * Authenticate the current password entered by the user
+			 * Check if the user id in the session matches the db user id
+			 */
+			if ($uidStored == 0) {
+					$GLOBALS['appLog']->log('Invalid Password entered: ' . $uidStored, \Lib\appLogger::INFO, __METHOD__);
+					$errorMessages[$errors] = $lang['INVALIDUSERPWD'];
+					$errors++;
+			}
+			else if ($uid != $uidStored) {
+					$GLOBALS['appLog']->log(sprintf('user id from session (%s) does not match user id from db (%s)', $uid, $uidStored), \Lib\appLogger::INFO, __METHOD__);
+					$errorMessages[$errors] = $lang['PWDVERIFYFAIL'];
+					$errors++;
+			}
+
+			if (!$errors) 
+			{
+				if (isset($_POST['newusername']) && ($_POST['newusername'] != '') && ($_POST['newusername'] != $username)) {
+					$newusername = $_POST['newusername'];
+					if ($userdoa->userExists($newusername))
+					{
+						$GLOBALS['appLog']->log('Username exists', \Lib\appLogger::INFO, __METHOD__);
+						$errorMessages[$errors] = $lang['USEREXISTS'];
+						$errors++;
+					}
+					else
+						$user->setUsername($newusername);
+				}
+
+				if (isset($_POST['newpassword']) && ($_POST['newpassword'] != '')) {
+					if ($_POST['newpassword'] != $_POST['newpassword2'])
+					{
+						$GLOBALS['appLog']->log('newpassword and confirm do not match', \Lib\appLogger::INFO, __METHOD__);
+						$errorMessages[$errors] = $lang['PWDCONFIRNOMATCH'];
+						$errors++;
+					}
+					else
+						$password = \Lib\auth::encrypt($newusername, $_POST['newpassword']);
+				}
+
+				if (isset($_POST['email']) && ($_POST['email'] != '')) {
+					$email = $_POST['email'];
+
+					if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+					{
+						$GLOBALS['appLog']->log('Not a valid E-mail address', \Lib\appLogger::INFO, __METHOD__);
+						$errorMessages[$errors] = $lang['EMAILNOTVALID'];
+						$errors++;
+					}
+					else
+						$user->setEmail($email);
+				}
+			} // !$errors
+
+
+		$GLOBALS['appLog']->log('user: ' . print_r($user, 1), \Lib\appLogger::DEBUG, __METHOD__);
+			if ($errors == 0)
+			{
+				$results = $userdoa->updateUser($user, $password);
+				/*
+				 * @todo status message of 'User Updated Successfully'
+				 */
+			  \Lib\session::set('status', 'successful');
+			  \Lib\session::set('displayMsg', $lang['USERUPDATED']);
+				$this->view->render(basename(__FILE__, ".php") . "/" . __FUNCTION__);
+			}
+			else //if ($errors > 0)
+			{
+			  \Lib\session::set('status', 'errors');
+				\Lib\session::set('userData', $u);
+				\Lib\session::set('displayMsg', $errorMessages);
+				$this->view->render(basename(__FILE__, ".php") . "/" . __FUNCTION__);
+				//header("location: http://" . HOST . URI ."/editUser");
+				//exit();
+			}
+		}
+	} // end edit
+
+	function delete() {
+		$GLOBALS['appLog']->log('+++   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
+
+		$lang = \Lib\Registry::getInstance()->get('lang');
+		$userdoa = new \Models\userdoa();
+		$uid = \Lib\session::get('uid');
+
+		if ($userdoa->deleteUser($uid))
+		{
+			\Lib\session::destroy();
+			\Lib\session::init();
+			\Lib\session::set('displayMsg', $lang['USERDELETED']);
+			header("location: http://" . HOST . URI ."/index");
+			exit();
+		}
+		else
+		{
+			// error
+			$msg = 'Error deleting user.';
+			$controller = new Error($msg);
+			$controller->index();
+		}
+
+	} // end deleteuser
+
 	private function sendActivationEmail($user)
 	{
 		// @todo do I need this step?
@@ -132,7 +303,7 @@ class profile extends \Lib\controller {
 		$uid = $user->getId();
 		$username = $user->getUsername();
 		$actkey = $user->getActivateKey();
-    $link = "http://$domain/profile/activate/$uid/$actkey";
+    $link = "http://$domain/user/activate/$uid/$actkey";
 		
     $message = "
 Thank you for registering on http://$domain/,
@@ -170,6 +341,6 @@ $domain Administration
 
 	} // end function sendActivationEmail
 
-} // end class profile
+} // end class user
 
 ?>

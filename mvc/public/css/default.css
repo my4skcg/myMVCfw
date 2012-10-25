@@ -4,16 +4,16 @@ body{
 
 #header {
 	padding: 20px;
-	background: gold;
+	background: #758573;
 }
 
 #content {
-	background: #fff;
+	background: #A4B095;
 	padding: 20px;
 }
 
 #footer{
-	background: green;
+	background: #CCCFAE;
 	padding: 20px;
 }
 

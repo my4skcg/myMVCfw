@@ -2,18 +2,26 @@
 namespace Lib;
 
 class view {
+	private $viewDir;
 
 	function __construct() {
 		$GLOBALS['appLog']->log('+++   ' . __METHOD__, appLogger::INFO, __METHOD__);
+		$this->viewDir = 'views/';
 	}
 
-	public function render ($name, $noInclude = false) {
+	public function setViewDir ($dir)
+	{
+		$this->viewDir = $dir . '/';
+	}
+
+	public function render ($name, $noHeader = false) {
 		$GLOBALS['appLog']->log('+++   ' . __METHOD__, appLogger::INFO, __METHOD__);
 		
-		$view = 'views/' . $name . '.php';
+		//$view = 'views/' . $name . '.php';
+		$view = $this->viewDir . $name . '.php';
 		$GLOBALS['appLog']->log('VIEW ' . $view, appLogger::INFO, __METHOD__);
 		
-		if ($noInclude) 
+		if ($noHeader) 
 			require $view;
 		else
 		{

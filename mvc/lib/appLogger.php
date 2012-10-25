@@ -44,13 +44,18 @@ class appLogger extends \KLogger {
 		 * 
 		 */
 		
-		if (isset($method))
-		{
-			$newline = '[' . $method . ']    ' . $line;
-			$line = $newline;
+		// log IF 1) LOGGING_OFF is not defined OR
+		//				2) LOGGING_OFF is defined and set to false
+		//if (!defined('LOGGING_OFF') || (defined('LOGGING_OFF') && !LOGGING_OFF)) {
+		if (defined('LOGGING_ON') && LOGGING_ON) {
+			if (isset($method))
+			{
+				$newline = '[' . $method . ']    ' . $line;
+				$line = $newline;
+			}
+
+			$this->_logger->log($line, $severity, $args);
 		}
-		
-		$this->_logger->log($line, $severity, $args);
 	}
 	
 }

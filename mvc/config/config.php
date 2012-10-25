@@ -8,7 +8,6 @@ define('URI', $uri);
 
 define('DEVELOPMENT_ENVIRONMENT', true);
 
-// database table names
-define('USERS_TABLE', 'users');
+//require (SITEPATH . 'config/const.php');
 
 ?>

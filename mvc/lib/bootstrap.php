@@ -21,21 +21,26 @@ class bootstrap {
     //require (SITEPATH . 'lib/KLogger.php');
 		//require_once (SITEPATH . 'app/appLogger.php');
 		
-		$GLOBALS['appLog']->log('##############  ' . __METHOD__, appLogger::INFO, __METHOD__);
-		
 		if (DEVELOPMENT_ENVIRONMENT == true) 
 		{
+			define ('LOGGING_ON', true);
 			error_reporting(E_ALL);
 			ini_set('display_errors','On');
 		}
 
+		$GLOBALS['appLog']->log('##############  ' . __METHOD__, appLogger::INFO, __METHOD__);
+		
 		// Setup the autoloader
 		$this->loader();
 
 		// Initialize the session
 		session::init();
+
+		// Determine language
+		$this->loadLang();
 		
 		// Setup the database handling
+		require_once (SITEPATH . 'config/const.php');
 		require_once (SITEPATH . 'config/database.php');
 		require_once (SITEPATH . 'lib/dbHandler.php');
 		// @todo currently implemented as a factory; do I want to put it in registry?
@@ -59,15 +64,27 @@ class bootstrap {
 			$GLOBALS['appLog']->log('args = ' . print_r($args,1), appLogger::DEBUG, __METHOD__);
 
 			$controllerFile = SITEPATH.'controllers/'.$cntrlr.'.php';
+			// App controller
+			$appControllerFile = SITEPATH.'app/controllers/'.$cntrlr.'.php';
 			$GLOBALS['appLog']->log('controllerFile = ' . $controllerFile, appLogger::DEBUG, __METHOD__);
+			$GLOBALS['appLog']->log('appControllerFile = ' . $appControllerFile, appLogger::DEBUG, __METHOD__);
 
-			if (is_readable($controllerFile))
-			{
-				// @todo will I split controllers into framework controllers and app controllers?
+			// @todo will I split controllers into framework controllers and app controllers?
+			if (is_readable($controllerFile)) {
 				$className = sprintf('\Controllers\%s', $cntrlr);
-				$GLOBALS['appLog']->log('className = ' . $className, appLogger::DEBUG, __METHOD__);
+			}
+			elseif (is_readable($appControllerFile)) {
+				$className = sprintf('\App\Controllers\%s', $cntrlr);
+			}
+			else
+			{
+				// handle error somehow
+			}
+
+			// No errors, so continue
 
 				$GLOBALS['appLog']->log($controllerFile . ' is readable', appLogger::INFO, __METHOD__);
+				$GLOBALS['appLog']->log('className = ' . $className, appLogger::DEBUG, __METHOD__);
 
 				$controller = new $className;
 				$GLOBALS['appLog']->log('$controller = ' . print_r($controller, 1), appLogger::INFO, __METHOD__);
@@ -89,11 +106,6 @@ class bootstrap {
 				{
 					call_user_func(array($controller,$method));
 				}
-			}
-			else
-			{
-				// handle error somehow
-			}
 		$GLOBALS['appLog']->log('---   ' . __METHOD__, appLogger::INFO, __METHOD__);
 	}
 	
@@ -112,6 +124,7 @@ class bootstrap {
 		//	spl_autoload_register();
 
 		spl_autoload_register(function($c){
+//			$GLOBALS['appLog']->log('$c= ' . print_r($c, 1), appLogger::INFO, __METHOD__);
 			try { spl_autoload($c); }
 			catch(Exception $e) { }
 		});
@@ -137,11 +150,60 @@ class bootstrap {
 //		$GLOBALS['appLog']->log(print_r(get_included_files(),1), appLogger::DEBUG);
 		}
 
-	function error($errorMsg) {
+	private function loadLang()
+	{
+		if(isSet($_GET['lang']))
+		{
+			$lang = $_GET['lang'];
+
+			// register the session and set the cookie
+			$_SESSION['lang'] = $lang;
+
+			setcookie('lang', $lang, time() + (3600 * 24 * 30));
+		}
+			else if(isSet($_SESSION['lang']))
+		{
+			$lang = $_SESSION['lang'];
+		}
+			else if(isSet($_COOKIE['lang']))
+		{
+			$lang = $_COOKIE['lang'];
+		}
+		else
+		{
+			$lang = 'en';
+		}
+
+		switch ($lang) {
+			case 'en':
+			$lang_file = 'lang.en.php';
+			break;
+
+//			case 'de':
+//			$lang_file = 'lang.de.php';
+//			break;
+//
+//			case 'es':
+//			$lang_file = 'lang.es.php';
+//			break;
+
+			default:
+			$lang_file = 'lang.en.php';
+
+		}
+
+		$file = SITEPATH . 'languages/' . $lang_file;
+//		$GLOBALS['appLog']->log('loading lang file: ' . $file, appLogger::INFO, __METHOD__);
+		include_once SITEPATH . 'languages/'.$lang_file;
+		//$GLOBALS['appLog']->log('$lang = ' . print_r($lang,1), appLogger::INFO, __METHOD__);
+		\Lib\Registry::getInstance()->set('lang', $lang);
+	} // loadLang
+
+	function error($msg) {
 		$GLOBALS['appLog']->log('+++   ' . __METHOD__, appLogger::INFO, __METHOD__);
 		
 		//require SITEPATH . 'controllers/errorController.php';
-		$controller = new Error($errorMsg);
+		$controller = new Error($msg);
 		$controller->index();
 
 		$GLOBALS['appLog']->log('---   ' . __METHOD__, appLogger::INFO, __METHOD__);

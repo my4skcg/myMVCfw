@@ -4,7 +4,6 @@ define('SITEPATH', realpath(dirname(__FILE__)).'/');
 require (SITEPATH . 'config/config.php');
 
 require_once (SITEPATH . 'lib/appLogger.php');
-//echo '<pre> Attempting to create appLogger </pre>';
 
 $GLOBALS['appLog'] = new \Lib\appLogger(SITEPATH . 'logs', \Lib\appLogger::DEBUG, basename(__FILE__));
 //echo '<pre> appLogger created </pre>';
