@@ -1,12 +1,12 @@
 <?php
 if (\Lib\session::get('status') == 'successful')
 {
-	if ($errors = \Lib\session::get('displayMsg'))
+	if (\Lib\session::get('displayMsg'))
 	{
 		echo \Lib\session::get('displayMsg');
 		\Lib\session::delete('displayMsg');
 	}
-	\Lib\session::delete('successful');
+	\Lib\session::delete('status');
 }
 else
 {

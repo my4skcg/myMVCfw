@@ -69,21 +69,30 @@ class bootstrap {
 			$GLOBALS['appLog']->log('controllerFile = ' . $controllerFile, appLogger::DEBUG, __METHOD__);
 			$GLOBALS['appLog']->log('appControllerFile = ' . $appControllerFile, appLogger::DEBUG, __METHOD__);
 
-			// @todo will I split controllers into framework controllers and app controllers?
-			if (is_readable($controllerFile)) {
-				$className = sprintf('\Controllers\%s', $cntrlr);
+			// Check if a controller exists in the framework or app and if the file is readable
+			$className = false;
+			if (file_exists($controllerFile)) {
+				$GLOBALS['appLog']->log($controllerFile . ' exists', appLogger::INFO, __METHOD__);
+				if (is_readable($controllerFile)) {
+					$className = sprintf('\Controllers\%s', $cntrlr);
+					$GLOBALS['appLog']->log($controllerFile . ' is readable', appLogger::INFO, __METHOD__);
+				}
+				else
+					$GLOBALS['appLog']->log($controllerFile . ' is not readable', appLogger::INFO, __METHOD__);
 			}
-			elseif (is_readable($appControllerFile)) {
-				$className = sprintf('\App\Controllers\%s', $cntrlr);
-			}
-			else
-			{
-				// handle error somehow
+			elseif (file_exists($appControllerFile)) {
+				$GLOBALS['appLog']->log($appControllerFile . ' exists', appLogger::INFO, __METHOD__);
+				if (is_readable($appControllerFile)) {
+					$className = sprintf('\App\Controllers\%s', $cntrlr);
+					$GLOBALS['appLog']->log($appControllerFile . ' is readable', appLogger::INFO, __METHOD__);
+				}
+				else
+					$GLOBALS['appLog']->log($appControllerFile . ' is not readable', appLogger::INFO, __METHOD__);
 			}
 
-			// No errors, so continue
+			// if $classname was set above, then a controller exists
+			if ($className) {
 
-				$GLOBALS['appLog']->log($controllerFile . ' is readable', appLogger::INFO, __METHOD__);
 				$GLOBALS['appLog']->log('className = ' . $className, appLogger::DEBUG, __METHOD__);
 
 				$controller = new $className;
@@ -106,6 +115,7 @@ class bootstrap {
 				{
 					call_user_func(array($controller,$method));
 				}
+			}
 		$GLOBALS['appLog']->log('---   ' . __METHOD__, appLogger::INFO, __METHOD__);
 	}
 	

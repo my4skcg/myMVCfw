@@ -25,4 +25,5 @@ $lang['USERDELETED'] = 'User has been deleted.';
 $lang['USERUPDATED'] = 'User has been updated.';
 $lang['USERLOGGEDOUT'] = 'You are now logged out.';
 
+include SITEPATH . 'app/languages/lang.en.php';
 ?>

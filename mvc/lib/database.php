@@ -124,12 +124,44 @@ class database extends \PDO {
 	}
 
 
-	/**
-	 * update
-	 * @param string $table A name of table to insert into
-	 * @param string $data An associative array containing data to select
-	 * @param string $where An associate array containing the where criteria
-	 */
+		public function insertUpdate ($table, $data, $classname)
+	{
+		$GLOBALS['appLog']->log(print_r($data, 1), appLogger::INFO, __METHOD__);
+		//$GLOBALS['appLog']->log(print_r($whereData, 1), appLogger::INFO, __METHOD__);
+		$fieldDetails = NULL;
+
+		$fieldnames = implode('`,`', array_keys($data));
+		$fieldvalues = ':' . implode(', :', array_keys($data));
+
+		foreach($data as $key=> $value) {
+			$fieldDetails .= "`$key`=:$key,";
+		}
+		$fieldDetails = rtrim($fieldDetails, ',');
+		
+		$sql = "INSERT INTO $table (`$fieldnames`) VALUES ($fieldvalues)
+		ON DUPLICATE KEY UPDATE $fieldDetails";
+
+		//$sql = "UPDATE $table SET $fieldDetails WHERE $whereClause";
+		$GLOBALS['appLog']->log($sql, appLogger::INFO, __METHOD__);
+		$stmt = $this->prepare($sql);
+		
+		foreach ($data as $key => $value) {
+			$stmt->bindValue(":$key", $value);
+		}
+		
+		$GLOBALS['appLog']->log(print_r($stmt, 1), appLogger::INFO, __METHOD__);
+		$results = $stmt->execute();
+
+		if ($results)
+		{
+			$count = $stmt->rowCount();
+
+			return $count;
+		}
+		else
+			return false;
+	}
+
 	public function delete ($table, $whereClause, $whereData, $classname)
 	{
 		$GLOBALS['appLog']->log('+++   ' . __METHOD__, appLogger::INFO, __METHOD__);
