@@ -29,7 +29,6 @@ namespace Lib;
 			$GLOBALS['appLog']->log('_controller = ' . $this->_controller, appLogger::DEBUG, __METHOD__);
 			$GLOBALS['appLog']->log('_method = ' . $this->_method, appLogger::DEBUG, __METHOD__);
 			$GLOBALS['appLog']->log('_args = ' . print_r($this->_args,1), appLogger::DEBUG, __METHOD__);
-			$GLOBALS['appLog']->log('_post = ' . print_r($this->_post,1), appLogger::DEBUG, __METHOD__);
 			
 			$GLOBALS['appLog']->log('---   ' . __METHOD__, appLogger::INFO, __METHOD__);
 

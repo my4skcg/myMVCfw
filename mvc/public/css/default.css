@@ -1,3 +1,19 @@
+.noformfielderror {
+	display: none;
+}
+
+.formfielderror {
+	display: inline;
+	color: #CC3333;
+	border: 1px solid #CC3333;
+}
+
+#addContact fieldset legend {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 18px;
+	font-weight: bold;
+}
+
 body{
 	background: silver;
 }
@@ -16,4 +32,3 @@ body{
 	background: #CCCFAE;
 	padding: 20px;
 }
-

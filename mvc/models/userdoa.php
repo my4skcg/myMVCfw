@@ -5,11 +5,13 @@ namespace Models;
  * Description of user
  *
  * @author marnscott
+ * @todo extend doa
  */
 class userdoa {
 
 	private $db;
 	private $classname = USERS_CLASS;
+	private $tablename = USERS_TABLE;
 	//private $classname = \Config\USERS_CLASS;
 
 	function __construct() {
@@ -27,7 +29,7 @@ class userdoa {
 				'username' => $username
 		);
 		
-		$results = $this->db->select(USERS_TABLE, $selectClause, $whereClause, $whereData, $this->classname);
+		$results = $this->db->select($this->tablename, $selectClause, $whereClause, $whereData, $this->classname);
 		$GLOBALS['appLog']->log(print_r($results, 1), \Lib\appLogger::DEBUG, __METHOD__);
 
 		if ($results['count'] == 0)
@@ -42,7 +44,7 @@ class userdoa {
 		try
 		{
 			$userData['activateKey'] = $this->createActivateKey();
-  		$this->db->insert(USERS_TABLE, $userData, $this->classname);
+  		$this->db->insert($this->tablename, $userData, $this->classname);
   		$GLOBALS['appLog']->log(print_r($userData, 1), \Lib\appLogger::DEBUG, __METHOD__);
 		} catch(PDOException $e) {
 		  die('PDO Exception: ' . $e->getMessage());
@@ -66,7 +68,7 @@ class userdoa {
 		
 		try
 		{
-  		$results = $this->db->select(USERS_TABLE, $selectClause, $whereClause, $whereData, $this->classname);
+  		$results = $this->db->select($this->tablename, $selectClause, $whereClause, $whereData, $this->classname);
   		$GLOBALS['appLog']->log('results of select: ' . print_r($results, 1), \Lib\appLogger::DEBUG, __METHOD__);
   
   		if ($results['count'] === 1)
@@ -102,7 +104,7 @@ class userdoa {
 
 		try
 		{
-			$results = $this->db->update(USERS_TABLE, $data, $whereClause, $whereData, $this->classname);
+			$results = $this->db->update($this->tablename, $data, $whereClause, $whereData, $this->classname);
 			$GLOBALS['appLog']->log(print_r($results, 1), \Lib\appLogger::DEBUG, __METHOD__);
 
 			if ($results != false)
@@ -139,7 +141,7 @@ class userdoa {
 
 		try
 		{
-			$results = $this->db->update(USERS_TABLE, $data, $whereClause, $whereData, $this->classname);
+			$results = $this->db->update($this->tablename, $data, $whereClause, $whereData, $this->classname);
 			$GLOBALS['appLog']->log(print_r($results, 1), \Lib\appLogger::DEBUG, __METHOD__);
 
 			if ($results != false)
@@ -176,7 +178,7 @@ class userdoa {
 
 		try
 		{
-			$results = $this->db->update(USERS_TABLE, $userArray, $whereClause, $whereData, $this->classname);
+			$results = $this->db->update($this->tablename, $userArray, $whereClause, $whereData, $this->classname);
 			$GLOBALS['appLog']->log(print_r($results, 1), \Lib\appLogger::DEBUG, __METHOD__);
 
 			if ($results != false)
@@ -205,7 +207,7 @@ class userdoa {
 			);
 		
 			// returns true or false
-  		$rc = $this->db->delete(USERS_TABLE, $whereClause, $whereData, $this->classname);
+  		$rc = $this->db->delete($this->tablename, $whereClause, $whereData, $this->classname);
 		} catch(PDOException $e) {
 		  die('PDO Exception: ' . $e->getMessage());
 		}

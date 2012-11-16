@@ -24,7 +24,7 @@ class profile extends \Lib\controller {
 		$GLOBALS['appLog']->log('uid: ' . $uid, \Lib\appLogger::INFO, __METHOD__);
 
 		// get profile data from db
-		$profiledoa = new \App\Models\profiledoa();
+		$profiledoa = new \App\Models\profiledoa(\App\Config\PROFILE_CLASS, \App\Config\PROFILES_TABLE);
 		$GLOBALS['appLog']->log('$profiledoa :    ' . print_r($profiledoa,1), \Lib\appLogger::INFO, __METHOD__);
 		$profile = $profiledoa->getData($uid);
 		if ($profile)

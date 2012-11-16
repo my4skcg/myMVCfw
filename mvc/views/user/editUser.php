@@ -18,6 +18,7 @@ else
 		\Lib\session::delete('displayMsg');
 	}
 
+	$u = \Lib\session::get('userData');
 	$un = isset($u['username']) ?  $u['username'] : '';
 	$em = isset($u['email']) ?  $u['email'] : '';
 	\Lib\session::delete('userData');

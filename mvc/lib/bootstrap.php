@@ -54,14 +54,14 @@ class bootstrap {
 	private function route(request $request)
 	{
 			$GLOBALS['appLog']->log('+++   ' . __METHOD__, appLogger::INFO, __METHOD__);
-			$GLOBALS['appLog']->log('$request = ' . print_r($request,1), appLogger::DEBUG, __METHOD__);
+//			$GLOBALS['appLog']->log('$request = ' . print_r($request,1), appLogger::DEBUG, __METHOD__);
 			
 			$cntrlr = $request->getController();
 			$method = $request->getMethod();
 			$args = $request->getArgs();
-			$GLOBALS['appLog']->log('controller = ' . $cntrlr, appLogger::DEBUG, __METHOD__);
-			$GLOBALS['appLog']->log('method = ' . $method, appLogger::DEBUG, __METHOD__);
-			$GLOBALS['appLog']->log('args = ' . print_r($args,1), appLogger::DEBUG, __METHOD__);
+//			$GLOBALS['appLog']->log('controller = ' . $cntrlr, appLogger::DEBUG, __METHOD__);
+//			$GLOBALS['appLog']->log('method = ' . $method, appLogger::DEBUG, __METHOD__);
+//			$GLOBALS['appLog']->log('args = ' . print_r($args,1), appLogger::DEBUG, __METHOD__);
 
 			$controllerFile = SITEPATH.'controllers/'.$cntrlr.'.php';
 			// App controller
@@ -72,36 +72,36 @@ class bootstrap {
 			// Check if a controller exists in the framework or app and if the file is readable
 			$className = false;
 			if (file_exists($controllerFile)) {
-				$GLOBALS['appLog']->log($controllerFile . ' exists', appLogger::INFO, __METHOD__);
+//				$GLOBALS['appLog']->log($controllerFile . ' exists', appLogger::INFO, __METHOD__);
 				if (is_readable($controllerFile)) {
 					$className = sprintf('\Controllers\%s', $cntrlr);
-					$GLOBALS['appLog']->log($controllerFile . ' is readable', appLogger::INFO, __METHOD__);
+//					$GLOBALS['appLog']->log($controllerFile . ' is readable', appLogger::INFO, __METHOD__);
 				}
-				else
-					$GLOBALS['appLog']->log($controllerFile . ' is not readable', appLogger::INFO, __METHOD__);
+//				else
+//					$GLOBALS['appLog']->log($controllerFile . ' is not readable', appLogger::INFO, __METHOD__);
 			}
 			elseif (file_exists($appControllerFile)) {
-				$GLOBALS['appLog']->log($appControllerFile . ' exists', appLogger::INFO, __METHOD__);
+//				$GLOBALS['appLog']->log($appControllerFile . ' exists', appLogger::INFO, __METHOD__);
 				if (is_readable($appControllerFile)) {
 					$className = sprintf('\App\Controllers\%s', $cntrlr);
-					$GLOBALS['appLog']->log($appControllerFile . ' is readable', appLogger::INFO, __METHOD__);
+//					$GLOBALS['appLog']->log($appControllerFile . ' is readable', appLogger::INFO, __METHOD__);
 				}
-				else
-					$GLOBALS['appLog']->log($appControllerFile . ' is not readable', appLogger::INFO, __METHOD__);
+//				else
+//					$GLOBALS['appLog']->log($appControllerFile . ' is not readable', appLogger::INFO, __METHOD__);
 			}
 
 			// if $classname was set above, then a controller exists
 			if ($className) {
 
-				$GLOBALS['appLog']->log('className = ' . $className, appLogger::DEBUG, __METHOD__);
+//				$GLOBALS['appLog']->log('className = ' . $className, appLogger::DEBUG, __METHOD__);
 
 				$controller = new $className;
 				$GLOBALS['appLog']->log('$controller = ' . print_r($controller, 1), appLogger::INFO, __METHOD__);
 				
-				if (is_callable(array($controller,$method)))
-					$GLOBALS['appLog']->log('Callable', appLogger::DEBUG, __METHOD__);
-				else
-					$GLOBALS['appLog']->log('Not Callable', appLogger::DEBUG, __METHOD__);
+//				if (is_callable(array($controller,$method)))
+//					$GLOBALS['appLog']->log('Callable', appLogger::DEBUG, __METHOD__);
+//				else
+//					$GLOBALS['appLog']->log('Not Callable', appLogger::DEBUG, __METHOD__);
 				 		
 
 				$method = (is_callable(array($controller,$method))) ? $method : 'index';
