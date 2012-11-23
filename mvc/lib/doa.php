@@ -46,16 +46,11 @@ class doa {
 	}
 
 	/**
-	 * gets user data from database
+	 * gets data from database for this id
 	 */
 	public function getData($id) {
 
 		$GLOBALS['appLog']->log('+++   ' . __METHOD__, \Lib\appLogger::INFO, __METHOD__);
-
-		// get data from the profiles table.
-		//  currently consists of uid (matching id from users table), 
-		//  and profileid (matching id from profile table).
-		//  May later include other profile data outside of contact info
 
 		$selectClause = '*';
 		$whereClause = '`id`=:id';
@@ -75,7 +70,7 @@ class doa {
   		}
   		else
   		{
-				// profile does not yet exist for this user
+				// data does not exist for this id
   			return false;
   		}
 		} catch(PDOException $e) {

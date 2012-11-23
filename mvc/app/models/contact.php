@@ -4,15 +4,21 @@ namespace App\Models;
 class contact {
 
 	private $id;   
-	private $uid;  // user name this contact belongs to
+	private $userId;  // user name this contact belongs to
 	private $firstname;
 	private $lastname;
-	private $homeph;
-	private $cellph;
-	private $workph;
+	private $phone1type;
+	private $phone1;
+	private $phone2type;
+	private $phone2;
+	private $phone3type;
+	private $phone3;
 
 	function __construct() {
 		
+	}
+	public function getId() {
+		return $this->id;
 	}
 
 	public function toArray($obj = NULL) {

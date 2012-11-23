@@ -10,16 +10,21 @@ class userdoaTest extends \PHPUnit_Framework_TestCase {
 	 * @var userdoa
 	 */
 	protected $object;
+	protected $u = array();
 
 	/**
 	 * Sets up the fixture, for example, opens a network connection.
 	 * This method is called before a test is executed.
 	 */
 	protected function setUp() {
-		require_once ('/var/www/mvc/lib/auth.php');
-		require_once ('/var/www/mvc/models/userdoa.php');   // get the autoloader working; delete this!!!
-		require_once ('/var/www/mvc/models/user.php');   // get the autoloader working; delete this!!!
+		$GLOBALS['appLog'] = new \Lib\appLogger(SITEPATH . 'tests/logs', \Lib\appLogger::DEBUG);
 		$this->object = new userdoa;
+		$this->u['username'] = 'phpunit';
+		$this->u['email'] = 'phpunit@test.com';
+		$this->u['created'] = date("Y-m-d H:i:s");
+		$this->u['active'] = false;
+		$this->u['password'] = md5('phpunit');
+		$this->u['activateKey'] = 0;
 	}
 
 	/**
@@ -35,7 +40,6 @@ class userdoaTest extends \PHPUnit_Framework_TestCase {
 	 * @todo   Implement testUserExists().
 	 */
 	public function testUserExists() {
-		//echo  __CLASS__;
 		$this->assertTrue($this->object->userExists('marion'));
 		$this->assertFalse($this->object->userExists('dummy'));
 	}
@@ -47,16 +51,10 @@ class userdoaTest extends \PHPUnit_Framework_TestCase {
 	 * @covers Models\userdoa::createNewUser
 	 */
 	public function testCreateNewUser() {
-		$u['username'] = 'testuser';
-		$u['email'] = 'testuser@test.com';
-		$u['created'] = date("Y-m-d H:i:s");
-		$u['active'] = false;
-		$u['password'] = md5('testuser');
-		$u['activateKey'] = 0;
-		$uid = $this->object->createNewUser($u);
+		$uid = $this->object->createNewUser($this->u);
 		$this->assertGreaterThanOrEqual(1, $uid);
+		$this->assertTrue($this->object->userExists($this->u['username']));
 		return $uid;
-		//$this->assertGreaterThanOrEqual(1, $this->object->createNewUser($u));
 	}
 
 	/**
@@ -64,8 +62,6 @@ class userdoaTest extends \PHPUnit_Framework_TestCase {
 	 * @depends testCreateNewUser
 	 */
 	public function testUpdateActive($uid) {
-		//$uid = \Lib\auth::authenticate('testuser', 'testuser');
-		//echo 'uid = ' . $uid . "\n";
 		$this->assertTrue($this->object->updateActive($uid));
 	}
 
@@ -75,8 +71,11 @@ class userdoaTest extends \PHPUnit_Framework_TestCase {
 	 * 
 	 */
 	public function testGetUserData($uid) {
-		//$uid = \Lib\auth::authenticate('testuser', 'testuser');
-	  $this->assertInstanceOf('Models\user', $this->object->getUserData($uid));
+		$results = $this->object->getUserData($uid);
+	  $this->assertInstanceOf('Models\user', $results);
+		$this->assertEquals($uid, $results->getId());
+		$this->assertEquals($this->u['username'], $results->getUsername());
+		$this->assertEquals($this->u['email'], $results->getEmail());
 	}
 
 	/**
@@ -84,8 +83,6 @@ class userdoaTest extends \PHPUnit_Framework_TestCase {
 	 * @depends testCreateNewUser
 	 */
 	public function testUpdateLastlogin($uid) {
-		//$uid = \Lib\auth::authenticate('testuser', 'testuser');
-		//echo 'uid = ' . $uid . "\n";
 		$this->assertTrue($this->object->updateLastlogin($uid));
 	}
 
@@ -94,9 +91,9 @@ class userdoaTest extends \PHPUnit_Framework_TestCase {
 	 * @depends testCreateNewUser
 	 */
 	public function testDeleteUser($uid) {
-		//$uid = \Lib\auth::authenticate('testuser', 'testuser');
-		//echo $uid . "\n";
+		$this->assertTrue($this->object->userExists($this->u['username']));
 		$this->assertTrue($this->object->deleteUser($uid));
+		$this->assertFalse($this->object->userExists($this->u['username']));
 	}
 
 	/**

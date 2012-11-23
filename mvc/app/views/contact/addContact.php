@@ -1,24 +1,24 @@
 <?php
 $displayForm = true;
 
-$parms = \Lib\session::get('parms');
-$lang = $parms['lang'];
-$consts = $parms['consts'];
-$status = $parms['status'];
-$action = $parms['action'];
+$params = \Lib\session::get('params');
+$lang = $params['lang'];
+$consts = $params['consts'];
+$status = $params['status'];
+$action = $params['action'];
 
 if ($status != $consts['newRequest']) {
 
-	if ($parms['status'] == 'successful')
+	if ($params['status'] == 'successful')
 	{
-		if ($parms['submit'] == $parms['lang']['SUBMITDONE'])
+		if ($params['submit'] == $params['lang']['SUBMITDONE'])
 			$displayForm = false;
 	}
 	else
 	{
-		if ($parms['status'] == 'errors')
+		if ($params['status'] == 'errors')
 		{
-			$errors = $parms['displayMsg'];
+			$errors = $params['displayMsg'];
 			foreach ($errors as $key => $value)
 				$errs[$key] = $value;   
 		}
@@ -28,7 +28,7 @@ if ($status != $consts['newRequest']) {
 	}
 }
 
-	$c = isset($parms['contactData']) ? $parms['contactData'] : array();
+	$c = isset($params['contactData']) ? $params['contactData'] : array();
 	$fn = isset($c['firstname']) ?  $c['firstname'] : '';
 	$ln = isset($c['lastname']) ?  $c['lastname'] : '';
 	$ph1 = isset($c['phone1']) ?  $c['phone1'] : '';
@@ -38,7 +38,7 @@ if ($status != $consts['newRequest']) {
 	$ph3 = isset($c['phone3']) ?  $c['phone3'] : '';
 	$ph3t = isset($c['phone3type']) ?  $c['phone3type'] : '';
 
-\Lib\session::delete('parms');
+\Lib\session::delete('params');
 
 if ($displayForm)
 {

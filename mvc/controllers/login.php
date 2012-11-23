@@ -95,7 +95,7 @@ class login extends \Lib\controller {
 		}
 		else
 		{
-			$errorId = 'INVALIDUSERPWD';
+			$errorId = 'INVALIDUSRPWD';
 			\Lib\session::set('displayMsg', $lang[$errorId]);
 			header("location: http://" . HOST . URI ."/login");
 			exit();

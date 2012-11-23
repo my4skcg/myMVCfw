@@ -44,8 +44,8 @@ class userdoa {
 		try
 		{
 			$userData['activateKey'] = $this->createActivateKey();
-  		$this->db->insert($this->tablename, $userData, $this->classname);
-  		$GLOBALS['appLog']->log(print_r($userData, 1), \Lib\appLogger::DEBUG, __METHOD__);
+  		$results = $this->db->insert($this->tablename, $userData, $this->classname);
+  		//$GLOBALS['appLog']->log(print_r($userData, 1), \Lib\appLogger::DEBUG, __METHOD__);
 		} catch(PDOException $e) {
 		  die('PDO Exception: ' . $e->getMessage());
 		}

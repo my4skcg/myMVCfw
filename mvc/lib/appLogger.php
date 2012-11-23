@@ -31,18 +31,19 @@ class appLogger extends \KLogger {
 		echo '<pre>'.'$logDirectory = '.print_r($this->_logDirectory,1).'</pre>';
 		echo '<pre>'.'$severity = '.print_r($this->_severity,1).'</pre>';
 		echo '<pre>'.'$logger = '.print_r($this->_logger,1).'</pre>';
-		 *
+		// *
 		 */
 	}
 	
 	public function log ($line, $severity, $method = NULL, $args = self::NO_ARGUMENTS) {
-		/*
-		echo '<pre>'.'In appLogger logMsg'.'</pre>';
-		echo '<pre>'.'$logDirectory = '.print_r($this->_logDirectory,1).'</pre>';
-		echo '<pre>'.'$severity = '.print_r($this->_severity,1).'</pre>';
-		echo '<pre>'.'$logger = '.print_r($this->_logger,1).'</pre>';
-		 * 
-		 */
+		//*
+		//echo PHP_EOL.'In appLogger logMsg';
+		//echo PHP_EOL.'logging: '. $line;
+		//echo PHP_EOL.'$logDirectory = '.print_r($this->_logDirectory,1);
+		//echo PHP_EOL.'$severity = '.print_r($this->_severity,1);
+		//echo PHP_EOL.'$logger = '.print_r($this->_logger,1) . PHP_EOL;
+		// * 
+		// */
 		
 		// log IF 1) LOGGING_OFF is not defined OR
 		//				2) LOGGING_OFF is defined and set to false

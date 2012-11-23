@@ -276,6 +276,9 @@ class user extends \Lib\controller {
 		$userdoa = new \Models\userdoa();
 		$uid = \Lib\session::get('uid');
 
+		/*
+		 * @todo must delete data from all other tables for this $uid
+		 */
 		if ($userdoa->deleteUser($uid))
 		{
 			\Lib\session::destroy();
